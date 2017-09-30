@@ -1,76 +1,244 @@
-(deftemplate NIÑO
- (slot dni)
- (slot tos)
- (slot mocos)
- (slot fiebre)
- (slot vomitos)
- (slot estornudos)
- (slot respiracion)
- (slot dolor_barriga)
- (slot hinchazon)
- (slot diarrea)
- (slot picores)
- (slot puntos_rojos)
- (slot diagnostico (default nil))
+(deftemplate NIN
+ (slot dni (default nil))
+ (slot tos(default nil))
+ (slot mocos(default nil))
+ (slot fiebre(default nil))
+ (slot vomitos(default nil))
+ (slot estornudos(default nil))
+ (slot respiracion(default nil))
+ (slot dolor_barriga(default nil))
+ (slot hinchazon(default nil))
+ (slot diarrea(default nil))
+ (slot picores(default nil))
+ (slot puntos_rojos(default nil))
+ (slot diagnostico_bronquitis (default nil))
+ (slot diagnostico_bronquitis (default nil))
+ (slot diagnostico_bronquitis (default nil))
+ (slot diagnostico_bronquitis (default nil))
+    
 )
-(do-backward-chaining NIÑO)
+(do-backward-chaining NIN)
 
-(deffacts niños (NIÑO (dni a41a) (tos si) (diarrea no))
- (NIÑO (dni a41b) (mocos no) (fiebre si))
- ;(NIÑO (dni a41c) (diarrea si) (tos no) (vomitos si))
- (NIÑO (dni a41c) (diarrea si) (tos no))
- (NIÑO (dni a41d) (hinchazon si) (vomitos si) (picores si))
+(deffacts ninos (NIN (dni a41a) (tos si) (diarrea no))
+ (NIN (dni a41b) (mocos no) (fiebre si))
+ ;(NIN (dni a41c) (diarrea si) (tos no) (vomitos si))
+ (NIN (dni a41c) (diarrea si) (tos no))
+ (NIN (dni a41d) (hinchazon si) (vomitos si) (picores si))
     )
 
 
 (defrule bronquitis_rule ; maxima prioridad, ya que soluciona el diagnostico
  (declare (salience 100) (no-loop TRUE) )
- ?coche <- (NIÑO (dni ?cod) (mocos si) (tos si) (estornudos si) (fiebre si) (respiracion dificultosa))
- => (modify ?coche (diagnostico bronquitis))
- (printout t "El niño " ?cod  " tiene bronquitis" crlf))
+ ?c <- (NIN (dni ?cod) (mocos si) (tos si) (estornudos si) (fiebre si) (respiracion dificultosa))
+ => (modify ?c (diagnostico bronquitis))
+ (printout t "El nino " ?cod  " tiene bronquitis" crlf))
 
 
 (defrule varicela_rule ; maxima prioridad, ya que soluciona el diagnostico
  (declare (salience 100) (no-loop TRUE) )
- ?coche <- (NIÑO (dni ?cod) (puntos_rojos si) (fiebre si) (picores si) )
- => (modify ?coche (diagnostico varicela))
- (printout t "El niño " ?cod  " tiene varicela" crlf))
+ ?c <- (NIN (dni ?cod) (puntos_rojos si) (fiebre si) (picores si) )
+ => (modify ?c (diagnostico varicela))
+ (printout t "El nino " ?cod  " tiene varicela" crlf))
 
 (defrule gastroenteritis_rule ; maxima prioridad, ya que soluciona el diagnostico
  (declare (salience 100) (no-loop TRUE) )
- ?coche <- (NIÑO (dni ?cod) (vomitos si) (diarrea si) (dolor_barriga si) )
- => (modify ?coche (diagnostico gastroenteritis))
- (printout t "El niño " ?cod  " tiene gastroenteritis" crlf))
+ ?c <- (NIN (dni ?cod) (vomitos si) (diarrea si) (dolor_barriga si) )
+ => (modify ?c (diagnostico gastroenteritis))
+ (printout t "El nino " ?cod  " tiene gastroenteritis" crlf))
 
 (defrule reaccion_alergica_rule ; maxima prioridad, ya que soluciona el diagnostico
  (declare (salience 100) (no-loop TRUE) )
- ?coche <- (NIÑO (dni ?cod) (hinchazon si) (picores si) (respiracion dificultosa) )
- => (modify ?coche (diagnostico gastroenteritis))
- (printout t "El niño " ?cod  " tiene una reaccion alergica" crlf))
+ ?c <- (NIN (dni ?cod) (hinchazon si) (picores si) (respiracion dificultosa) )
+ => (modify ?c (diagnostico reaccion_alergica))
+ (printout t "El nino " ?cod  " tiene una reaccion alergica" crlf))
+
+
+;Regla por si el nino no tiene nada
+(defrule paracetamol ; maxima prioridad, ya que soluciona el diagnostico
+ (declare (salience 100) (no-loop TRUE) )
+ ?c <- (NIN (dni ?cod) (mocos ?mocos) (fiebre ?fiebre) (vomitos ?vomitos) 
+        (estornudos ?estornudos) (respiracion ?respiracion) (tos ?tos)
+        (dolor_barriga ?dolor_barriga)  (hinchazon ?hinchazon) 
+        (diarrea ?diarrea) (picores ?picores) (puntos_rojos ?puntos_rojos)
+        (diagnostico nil))
+    (and
+    ;bronquitis
+    (or (eq ?tos no)  (eq ?mocos no ) (eq ?estornudos no ) (eq ?fiebre no) (eq ?respiracion buena) (eq ?respiracion bien)) 
+    ;varicela
+    (or (eq ?puntos_rojos no) (eq ?fiebre no) (eq ?picores no)) 
+    ;gastroenteritis
+    (or(eq ?vomitos no) (eq ?diarrea no) (eq ?dolor_barriga no))
+    ;r_alergica
+    (or(eq ?hinchazon no) (eq ?picores no)  (eq ?respiracion bien) (eq ?respiracion buena) (eq ?respiracion bien))
+    );fin tests
+    
+ => (modify ?c (diagnostico paracetamol))
+ (printout t "El nino " ?cod  " parece no tener nada grave, le recomiendo que se tome un paracetamol. 
+        Si lo requiere, le pido cita con un especialista" crlf))
+
 
 ; Derivaciones
 
 (defrule mocos_rule
     (declare (salience 20)(no-loop TRUE))
-?g <- (NIÑO (dni ?codigo) (tos si) (estornudos si))
+?g <- (NIN (dni ?codigo) (tos si) (estornudos si))
  =>
  (modify ?g (mocos si))) 
 
 (defrule dolor_barriga_rule
     (declare (salience 20)(no-loop TRUE))
-?g <- (NIÑO (dni ?codigo) (vomitos si) (diarrea si))
+?g <- (NIN (dni ?codigo) (vomitos si) (diarrea si))
  =>
  (modify ?g (dolor_barriga si))) 
+
+(defrule respiracion_dif_rule
+    (declare (salience 20)(no-loop TRUE))
+?g <- (NIN (dni ?codigo) (tos si) (estornudos si))
+ =>
+ (modify ?g (respiracion dificultosa))) 
+
+(defrule picores_rule
+    (declare (salience 20)(no-loop TRUE))
+?g <- (NIN (dni ?codigo) (puntos_rojos si))
+ =>
+    ;(printout t "El nino " ?codigo  " deduzco que tiene picores" crlf)
+ (modify ?g (picores si)))
 
 ; -------
 ; preguntas
 (defrule pregunta_vomito ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
  (declare (salience 0))
- (exists (need-NIÑO (dni ?cod) (vomitos nil) ) )
- ?g <- (NIÑO (dni ?cod) (vomitos nil) (diagnostico nil))
- => (printout t "EL niño " ?cod " tiene vomitos?")
+ (exists (need-NIN (dni ?cod) (vomitos nil) ) )
+ ?g <- (NIN (dni ?cod) (vomitos nil) (diarrea ?diarrea) (dolor_barriga ?dbarriga) (diagnostico nil))
+    (test (neq ?diarrea no))
+    (test (neq ?dbarriga no))
+ => (printout t "EL nino " ?cod " tiene vomitos?")
  (modify ?g (vomitos (read))))
 
+(defrule pregunta_tos ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
+ (declare (salience 0))
+ (exists (need-NIN (dni ?cod) (tos nil) ) )
+ ?g <- (NIN (dni ?cod) (tos nil) (mocos ?mocos) (estornudos ?estornudos) (fiebre ?fiebre) (respiracion ?respiracion)(diagnostico nil))
+    (test (neq ?mocos no))
+    (test (neq ?estornudos no))
+    (test (neq ?fiebre no))
+    (test (neq ?respiracion bien))
+    (test (neq ?respiracion buena))
+ => (printout t "EL nino " ?cod " tiene tos?")
+ (modify ?g (tos (read))))
+
+(defrule pregunta_mocos ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
+ (declare (salience 0))
+ (exists (need-NIN (dni ?cod) (mocos nil) ) )
+ ?g <- (NIN (dni ?cod) (mocos nil) (tos ?tos) (estornudos ?estornudos) (fiebre ?fiebre) (respiracion ?respiracion)(diagnostico nil))
+    (test (neq ?tos no))
+    (test (neq ?estornudos no))
+    (test (neq ?fiebre no))
+    (test (neq ?respiracion bien))
+    (test (neq ?respiracion buena))
+ => (printout t "EL nino " ?cod " tiene mocos?")
+ (modify ?g (mocos (read))))
+
+(defrule pregunta_estornudos ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
+ (declare (salience 0))
+ (exists (need-NIN (dni ?cod) (estornudos nil) ) )
+ ?g <- (NIN (dni ?cod) (estornudos nil) (tos ?tos) (mocos ?mocos) (fiebre ?fiebre) (respiracion ?respiracion)(diagnostico nil))
+    (test (neq ?tos no))
+    (test (neq ?mocos no))
+    (test (neq ?fiebre no))
+    (test (neq ?respiracion bien))
+    (test (neq ?respiracion buena))
+ => (printout t "EL nino " ?cod " tiene estornudos?")
+ (modify ?g (estornudos (read))))
+
+(defrule pregunta_fiebre_bronquitis ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
+ (declare (salience 0))
+ (exists (need-NIN (dni ?cod) (fiebre nil) ) )
+ ?g <- (NIN (dni ?cod) (fiebre nil) (tos ?tos ) (mocos ?mocos) (estornudos ?estornudos) (respiracion ?respiracion)(diagnostico nil))
+    (test (neq ?tos no))
+    (test (neq ?mocos no))
+    (test (neq ?estornudos no))
+    (test (neq ?respiracion bien))
+    (test (neq ?respiracion buena))
+ => (printout t "EL nino " ?cod " tiene fiebre?")
+ (modify ?g (fiebre (read))))
+
+(defrule pregunta_fiebre_varicela ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
+ (declare (salience 0))
+ (exists (need-NIN (dni ?cod) (fiebre nil) ) )
+ ?g <- (NIN (dni ?cod) (fiebre nil) (puntos_rojos ?puntos_rojos) (picores ?picores) (diagnostico nil))
+    (test (neq ?puntos_rojos no))
+    (test (neq ?picores no))
+ => (printout t "EL nino " ?cod " tiene fiebre?")
+ (modify ?g (fiebre (read))))
+
+(defrule pregunta_puntos_rojos ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
+ (declare (salience 0))
+ (exists (need-NIN (dni ?cod) (puntos_rojos nil) ) )
+ ?g <- (NIN (dni ?cod) (puntos_rojos nil) (fiebre ?fiebre) (picores ?picores) (diagnostico nil))
+    (test (neq ?fiebre no))
+    (test (neq ?picores no))
+ => (printout t "EL nino " ?cod " tiene puntos rojos?")
+ (modify ?g (puntos_rojos (read))))
+
+(defrule pregunta_picores_varicela ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
+ (declare (salience 0))
+ (exists (need-NIN (dni ?cod) (picores nil) ) )
+ ?g <- (NIN (dni ?cod) (picores nil) (puntos_rojos ?puntos_rojos) (fiebre ?fiebre) (diagnostico nil))
+    (test (neq ?puntos_rojos no))
+    (test (neq ?fiebre no))
+ => (printout t "EL nino " ?cod " tiene picores?")
+ (modify ?g (picores (read))))
+
+(defrule pregunta_picores_reaccion_alergica ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
+ (declare (salience 0))
+ (exists (need-NIN (dni ?cod) (picores nil) ) )
+ ?g <- (NIN (dni ?cod) (picores nil) (hinchazon ?hinchazon) (respiracion ?respiracion) (diagnostico nil))
+    (test (neq ?hinchazon no))
+    (test (neq ?respiracion bien))
+    (test (neq ?respiracion buena))
+ => (printout t "EL nino " ?cod " tiene picores?")
+ (modify ?g (picores (read))))
+
+(defrule pregunta_diarrea ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
+ (declare (salience 0))
+ (exists (need-NIN (dni ?cod) (diarrea nil) ) )
+ ?g <- (NIN (dni ?cod) (diarrea nil) (vomitos ?vomitos) (dolor_barriga ?dolor_barriga) (diagnostico nil))
+    (test (neq ?vomitos no))
+    (test (neq ?dolor_barriga no))
+ => (printout t "EL nino " ?cod " tiene diarrea?")
+ (modify ?g (diarrea (read))))
+
+(defrule pregunta_hinchazon ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
+ (declare (salience 0))
+ (exists (need-NIN (dni ?cod) (hinchazon nil) ) )
+ ?g <- (NIN (dni ?cod) (hinchazon nil) (picores ?picores) (respiracion ?respiracion) (diagnostico nil))
+    (test (neq ?picores no))
+    (test (neq ?respiracion bien))
+    (test (neq ?respiracion buena))
+ => (printout t "EL nino " ?cod " tiene hinchazon?")
+ (modify ?g (hinchazon (read))))
+
+
+(defrule pregunta_respiracion_reaccion_alergica ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
+ (declare (salience 0))
+ (exists (need-NIN (dni ?cod) (respiracion nil) ) )
+ ?g <- (NIN (dni ?cod) (respiracion nil) (picores ?picores) (hinchazon ?hinchazon) (diagnostico nil))
+    (test (neq ?picores no))
+    (test (neq ?hinchazon no))
+ => (printout t "Como es la respiracion del nino " ?cod "(buena/bien o dificultosa)?")
+ (modify ?g (respiracion (read))))
+
+(defrule pregunta_respiracion_bronquitis ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
+ (declare (salience 0))
+ (exists (need-NIN (dni ?cod) (respiracion nil) ) )
+ ?g <- (NIN (dni ?cod) (respiracion nil) (mocos ?mocos) (estornudos ?estornudos) (fiebre ?fiebre) (tos ?tos)(diagnostico nil))
+    (test (neq ?tos no))
+    (test (neq ?mocos no))
+    (test (neq ?fiebre no))
+    (test (neq ?estornudos no))
+ => (printout t "Como es la respiracion del nino " ?cod "(buena/bien o dificultosa)?")
+ (modify ?g (respiracion (read))))
 
 (reset)
 (facts)
