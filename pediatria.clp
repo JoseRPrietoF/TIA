@@ -19,9 +19,9 @@
 )
 (do-backward-chaining NIN)
 
-(deffacts ninos (NIN (dni a41a) (tos si) (diarrea no))
+(deffacts ninos 
+ (NIN (dni a41a) (tos si) (diarrea no))
  (NIN (dni a41b) (mocos no) (fiebre si))
- ;(NIN (dni a41c) (diarrea si) (tos no) (vomitos si))
  (NIN (dni a41c) (diarrea si) (tos no))
  (NIN (dni a41d) (hinchazon si) (vomitos si) (picores si))
     )
@@ -94,7 +94,9 @@
     	(or (eq ?tos no)  (eq ?mocos no ) (eq ?estornudos no ) (eq ?fiebre no) (eq ?respiracion buena) (eq ?respiracion bien)) 
 	)
     
- => (modify ?c (diagnostico_bronquitis no)))
+ => (modify ?c (diagnostico_bronquitis no))
+    ;(printout t " no bronquitis" crlf)
+	)
 
 (defrule no_varicela ; maxima prioridad, ya que soluciona el diagnostico
  (declare (salience 100) (no-loop TRUE) )
@@ -103,7 +105,9 @@
     	(or (eq ?puntos_rojos no)  (eq ?fiebre no ) (eq ?picores no )) 
 	)
     
- => (modify ?c (diagnostico_varicela no)))
+ => (modify ?c (diagnostico_varicela no))
+    ;(printout t " no varicela" crlf)
+    )
 
 (defrule no_gastroenteritis ; maxima prioridad, ya que soluciona el diagnostico
  (declare (salience 100) (no-loop TRUE) )
@@ -112,7 +116,9 @@
     	(or (eq ?vomitos no)  (eq ?diarrea no ) (eq ?dolor_barriga no )) 
 	)
     
- => (modify ?c (diagnostico_gastroenteritis no)))
+ => (modify ?c (diagnostico_gastroenteritis no))
+    ;(printout t " no gastroenteritis" crlf)
+    )
 
 (defrule no_reaccion_alergica ; maxima prioridad, ya que soluciona el diagnostico
  (declare (salience 100) (no-loop TRUE) )
@@ -121,7 +127,9 @@
     	(or (eq ?hinchazon no)  (eq ?picores no ) (eq ?respiracion buena) (eq ?respiracion bien)) 
 	)
     
- => (modify ?c (diagnostico_reaccion_alergica no)))
+ => (modify ?c (diagnostico_reaccion_alergica no))
+    ;(printout t " no r_alergica" crlf)
+    )
 
 
 (defrule mocos_rule
@@ -157,7 +165,7 @@
  ?g <- (NIN (dni ?cod) (vomitos nil) (diarrea ?diarrea) (dolor_barriga ?dbarriga) (diagnostico_gastroenteritis nil))
     (test (neq ?diarrea no))
     (test (neq ?dbarriga no))
- => (printout t "EL nino " ?cod " tiene vomitos? ")
+ => (printout t "EL nino " ?cod " tiene vomitos? (si/no) ")
  (modify ?g (vomitos (read))))
 
 (defrule pregunta_tos ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
@@ -169,7 +177,7 @@
     (test (neq ?fiebre no))
     (test (neq ?respiracion bien))
     (test (neq ?respiracion buena))
- => (printout t "EL nino " ?cod " tiene tos? ")
+ => (printout t "EL nino " ?cod " tiene tos? (si/no) ")
  (modify ?g (tos (read))))
 
 (defrule pregunta_mocos ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
@@ -181,7 +189,7 @@
     (test (neq ?fiebre no))
     (test (neq ?respiracion bien))
     (test (neq ?respiracion buena))
- => (printout t "EL nino " ?cod " tiene mocos? ")
+ => (printout t "EL nino " ?cod " tiene mocos? (si/no) ")
  (modify ?g (mocos (read))))
 
 (defrule pregunta_estornudos ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
@@ -193,7 +201,7 @@
     (test (neq ?fiebre no))
     (test (neq ?respiracion bien))
     (test (neq ?respiracion buena))
- => (printout t "EL nino " ?cod " tiene estornudos? ")
+ => (printout t "EL nino " ?cod " tiene estornudos? (si/no) ")
  (modify ?g (estornudos (read))))
 
 (defrule pregunta_fiebre_bronquitis ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
@@ -205,7 +213,7 @@
     (test (neq ?estornudos no))
     (test (neq ?respiracion bien))
     (test (neq ?respiracion buena))
- => (printout t "EL nino " ?cod " tiene fiebre? ")
+ => (printout t "EL nino " ?cod " tiene fiebre? (si/no) ")
  (modify ?g (fiebre (read))))
 
 (defrule pregunta_fiebre_varicela ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
@@ -214,7 +222,7 @@
  ?g <- (NIN (dni ?cod) (fiebre nil) (puntos_rojos ?puntos_rojos) (picores ?picores) (diagnostico_varicela nil))
     (test (neq ?puntos_rojos no))
     (test (neq ?picores no))
- => (printout t "EL nino " ?cod " tiene fiebre? ")
+ => (printout t "EL nino " ?cod " tiene fiebre? (si/no) ")
  (modify ?g (fiebre (read))))
 
 (defrule pregunta_puntos_rojos ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
@@ -223,7 +231,7 @@
  ?g <- (NIN (dni ?cod) (puntos_rojos nil) (fiebre ?fiebre) (picores ?picores) (diagnostico_varicela nil))
     (test (neq ?fiebre no))
     (test (neq ?picores no))
- => (printout t "EL nino " ?cod " tiene puntos rojos? ")
+ => (printout t "EL nino " ?cod " tiene puntos rojos? (si/no) ")
  (modify ?g (puntos_rojos (read))))
 
 (defrule pregunta_picores_varicela ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
@@ -232,7 +240,7 @@
  ?g <- (NIN (dni ?cod) (picores nil) (puntos_rojos ?puntos_rojos) (fiebre ?fiebre) (diagnostico_varicela nil))
     (test (neq ?puntos_rojos no))
     (test (neq ?fiebre no))
- => (printout t "EL nino " ?cod " tiene picores? ")
+ => (printout t "EL nino " ?cod " tiene picores? (si/no) ")
  (modify ?g (picores (read))))
 
 (defrule pregunta_picores_reaccion_alergica ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
@@ -242,7 +250,7 @@
     (test (neq ?hinchazon no))
     (test (neq ?respiracion bien))
     (test (neq ?respiracion buena))
- => (printout t "EL nino " ?cod " tiene picores? ")
+ => (printout t "EL nino " ?cod " tiene picores? (si/no) ")
  (modify ?g (picores (read))))
 
 (defrule pregunta_diarrea ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
@@ -251,7 +259,7 @@
  ?g <- (NIN (dni ?cod) (diarrea nil) (vomitos ?vomitos) (dolor_barriga ?dolor_barriga) (diagnostico_gastroenteritis nil))
     (test (neq ?vomitos no))
     (test (neq ?dolor_barriga no))
- => (printout t "EL nino " ?cod " tiene diarrea? ")
+ => (printout t "EL nino " ?cod " tiene diarrea? (si/no) ")
  (modify ?g (diarrea (read))))
 
 (defrule pregunta_hinchazon ; prioridad mínima, ya que son preguntas al usuario por hechos no conocidos ni deducibles
@@ -261,7 +269,7 @@
     (test (neq ?picores no))
     (test (neq ?respiracion bien))
     (test (neq ?respiracion buena))
- => (printout t "EL nino " ?cod " tiene hinchazon? ")
+ => (printout t "EL nino " ?cod " tiene hinchazon? (si/no) ")
  (modify ?g (hinchazon (read))))
 
 
