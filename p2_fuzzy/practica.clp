@@ -13,8 +13,8 @@
 -30 30 kmh ;Universo
 	(
 		(alejando (-30 1) (0 0))
-		(constante (0 0) (30 1) )
-		(acercando (-10 0) (0 1) (10 0))
+		(constante (-30 0) (-10 0) (0 1) (10 0) (30 0) )
+		(acercando (-30 0) (0 0) (30 1))
 	)
 )
 
@@ -29,11 +29,11 @@
 	)
 )
 
-;(deftemplate coche
-; (slot Distancia (type FUZZY-VALUE Distancia))
-; (slot VelocidadRelativa (type FUZZY-VALUE VelocidadRelativa) )
+(deftemplate coche
+ (slot Distancia (type FUZZY-VALUE Distancia))
+ (slot VelocidadRelativa (type FUZZY-VALUE VelocidadRelativa) )
  ;(slot PresionFreno (type FUZZY-VALUE PresionFreno) )
-; (slot evaluado (type SYMBOL))) 
+ (slot evaluado (type SYMBOL))) 
 
 
 (defrule print
@@ -94,7 +94,6 @@
  ?value (min ?hi (+ ?value ?delta)) ))
  ))) 
 
-
 ;(defrule start
 ;(initial-fact)
 ;=>
@@ -104,64 +103,21 @@
 ;(assert (PresionFreno (10 0)))
 ;)
 
-;(defrule leerconsola
-; (initial-fact)
-;=>
- ;(printout t "Introduzca la distancia en metros" crlf)
- ;(bind ?Rdist (read))
- ;(printout t "Introduzca la velocidad relativa en kms/ hora" crlf)
- ;(bind ?Rkmh (read))
- ;(assert (Distancia (?Rdist 0.1)))
- ;(fuzzify Distancia ?Rdist 0.1)
- ;(fuzzify VelocidadRelativa ?Rkmh 0.1)
- ;(printout t "La distancia es " (moment-defuzzify ?Rdist) “ con una vel de “ (get-u-units ?Rdist) crlf ) 
-;) 
-
-
-
-
-
-
-
-(defrule presion_nula_1
- ?f <- (coche  (Distancia ?d) (VelocidadRelativa alejando)  (evaluado no) )
+(defrule leerconsola
+ (initial-fact)
 =>
- (retract ?f)
- (assert  (coche (Distancia ?d) (VelocidadRelativa alejando)  (evaluado si) ))
- (printout t "Presion nula 1" crlf)
- (assert (PresionFreno nula) )) 
+ (printout t "Introduzca la distancia en metros" crlf)
+ (bind ?Rdist (read))
+ (printout t "Introduzca la velocidad relativa en kms/ hora" crlf)
+ (bind ?Rkmh (read))
+ (assert-string (format nil "(coche (Distancia %s) (VelocidadRelativa %s) (evaluado no))" ?Rdist ?Rkmh))
+) 
 
-(defrule presion_nula_2
- ?f <- (coche  (Distancia medio) (VelocidadRelativa constante)  (evaluado no) )
-=>
- (retract ?f)
- (assert  (coche (Distancia medio) (VelocidadRelativa constante)  (evaluado si) ))
- (printout t "Presion nula 2" crlf)
- (assert (PresionFreno nula) )) 
- 
- 
-(defrule presion_media_1
- ?f <- (coche (Distancia medio) (VelocidadRelativa acercando)  (evaluado no) )
 
-=>
- (retract ?f)
- (assert  (coche (Distancia medio) (VelocidadRelativa acercando)  (evaluado si) ))
- (printout t "Presion media 1" crlf)
- (assert (PresionFreno media) )) 
- 
-(defrule presion_media_2
- ?f <- (coche (Distancia cerca) (VelocidadRelativa constante)  (evaluado no) )
-
-=>
- (retract ?f)
- (assert  (coche (Distancia cerca) (VelocidadRelativa constante)  (evaluado si) ))
- (printout t "Presion media 2" crlf)
- (assert (PresionFreno media) )) 
- 
 
 (defrule presion_alta
 
- ?f <- (coche (Distancia cerca) (VelocidadRelativa very acercando)  (evaluado no) )
+ ?f <- (coche (Distancia  cerca) (VelocidadRelativa  acercando)  (evaluado no) )
 =>
  (retract ?f)
  (assert (coche (Distancia cerca) (VelocidadRelativa acercando)  (evaluado si)))
@@ -171,20 +127,45 @@
  
 
 
-(deffacts fuzzy-fact
+
+(defrule presion_nula
+ ?f <- (coche  (Distancia ?d) (VelocidadRelativa alejando)  (evaluado no) )
+=>
+ (retract ?f)
+ (assert  (coche (Distancia ?d) (VelocidadRelativa alejando)  (evaluado si) ))
+ (printout t "Presion nula 1" crlf)
+ (assert (PresionFreno nula) )) 
+
+
+ 
+(defrule presion_media
+ ?f <- (coche (Distancia medio) (VelocidadRelativa constante)  (evaluado no) )
+
+=>
+ (retract ?f)
+ (assert  (coche (Distancia medio) (VelocidadRelativa acercando)  (evaluado si) ))
+ (printout t "Presion media 1" crlf)
+ (assert (PresionFreno media) )) 
+ 
+
+
+
+;;; PRUEBAS UTILIZADAS
+;(deffacts fuzzy-fact
  ;(coche (Distancia cerca) (VelocidadRelativa acercando) (evaluado no)) 
+ ;(coche (Distancia cerca) (VelocidadRelativa constante) (evaluado no)) 
  ;(coche (Distancia lejos) (VelocidadRelativa constante) (evaluado no)) 
  ;(coche (Distancia lejos) (VelocidadRelativa acercando) (evaluado no)) 
- (coche (Distancia lejos) (VelocidadRelativa alejando) (evaluado no)) 
- ;(coche (Distancia medio) (VelocidadRelativa constante) (evaluado no)) 
-)
+ ;(coche (Distancia lejos) (VelocidadRelativa alejando) (evaluado no)) 
+
+;)
 
 
  
  
 (defrule defusificar
  (PresionFreno ?f) 
- => (bind ?e (maximum-defuzzify ?f))
+ => (bind ?e (moment-defuzzify ?f))
  (printout t "pisa el freno al " ?e "% de " (get-u-units ?f) crlf)) 
 
 (reset)
